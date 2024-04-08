@@ -266,7 +266,7 @@ def to_affine_scalar(x):
 
     if isinstance(x, CONSTANT_TYPES):
         # No variable => no derivative:
-        return AffineScalarFunc(x, LinearCombination({}))
+        return ufloat(x,0)
 
     # Case of lists, etc.
     raise NotUpcast("%s cannot be converted to a number with"
@@ -808,6 +808,10 @@ def eq_on_aff_funcs(self, y_with_uncert):
     __eq__ operator, assuming that both self and y_with_uncert are
     AffineScalarFunc objects.
     """
+    self_derivatives = sorted([(id(key), value) for key, value in self.derivatives.items() if value != 0])
+    y_with_uncert_derivatives = sorted([(id(key), value) for key, value in y_with_uncert.derivatives.items() if value != 0])
+    return self._nominal_value == y_with_uncert._nominal_value and (self_derivatives == y_with_uncert_derivatives or (self.std_dev == 0 and y_with_uncert.std_dev == 0))
+
     difference = self - y_with_uncert
     # Only an exact zero difference means that self and y are
     # equal numerically:
